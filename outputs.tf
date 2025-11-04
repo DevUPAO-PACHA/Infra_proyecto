@@ -12,3 +12,8 @@ output "db_secret_arn" {
   description = "El ARN del secreto en Secrets Manager."
   value       = aws_secretsmanager_secret.db.arn
 }
+
+output "alb_dns_name" {
+  description = "El DNS público del Application Load Balancer."
+  value       = aws_lb.main.dns_name
+}
