@@ -17,3 +17,8 @@ output "alb_dns_name" {
   description = "El DNS público del Application Load Balancer."
   value       = aws_lb.main.dns_name
 }
+
+output "frontend_url" {
+  description = "La URL pública (CloudFront) de la aplicación."
+  value       = "https://${aws_cloudfront_distribution.main.domain_name}"
+}
