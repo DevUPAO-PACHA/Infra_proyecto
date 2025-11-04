@@ -5,6 +5,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0" # Usar una versión reciente del provider de AWS
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.5"
+    }
   }
 
   # NOTA: Más adelante, aquí configuraremos el "Backend Remoto"

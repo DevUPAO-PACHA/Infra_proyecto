@@ -35,3 +35,15 @@ variable "db_subnets_cidr" {
   type        = list(string)
   default     = ["10.0.20.0/24", "10.0.21.0/24"]
 }
+
+variable "app_port" {
+  description = "Puerto en el que escucha la aplicación Spring Boot (Diagrama: 8000)."
+  type        = number
+  default     = 8000
+}
+
+variable "db_username" {
+  description = "Usuario 'master' para la base de datos Aurora."
+  type        = string
+  default     = "dbadmin"
+}
