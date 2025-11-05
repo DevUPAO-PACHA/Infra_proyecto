@@ -27,7 +27,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           # ¡Asegúrate de que este ARN sigue siendo el tuyo!
-          role-to-assume: arn:aws:iam::695100305629:role/github-actions-plan-role
+          role-to-assume: arn:aws:iam::695100305629:role/github-actions-plan-role #--> Modificar a tu arn
           aws-region: us-east-1
 
       - name: Setup Terraform
