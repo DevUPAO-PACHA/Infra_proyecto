@@ -1,0 +1,41 @@
+# .github/workflows/terraform-destroy.yml
+
+name: 'Terraform Destroy (Manual)'
+
+# --- El Disparador Clave ---
+on:
+  workflow_dispatch: # ¡Esto añade el botón "Run workflow" en la pestaña Actions!
+
+jobs:
+  terraform-destroy:
+    name: 'Terraform Destroy'
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # --- ¡PEGA TU ARN DE DESTROY AQUÍ! ---
+          role-to-assume: arn:aws:iam::695100305629:role/github-actions-destroy-role # PEGA TU ARN: "arn:aws:iam::695100305629:role/github-actions-destroy-role"
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Destroy
+        id: destroy
+        # -auto-approve es vital aquí también
+        run: terraform destroy -auto-approve
