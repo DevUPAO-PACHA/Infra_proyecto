@@ -16,7 +16,7 @@ resource "aws_sqs_queue" "reservas_queue" {
   # mueve el mensaje a la DLQ.
   redrive_policy = jsonencode({
     deadLetterTargetArn = aws_sqs_queue.reservas_dlq.arn
-    maxReceiveCounts    = 3
+    maxReceiveCount    = 3
   })
 
   tags = {
