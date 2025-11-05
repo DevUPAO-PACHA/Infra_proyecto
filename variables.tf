@@ -59,3 +59,15 @@ variable "worker_image_uri" {
   type        = string
   # No hay 'default'.
 }
+
+variable "backend_s3_bucket_name" {
+  description = "El nombre del bucket S3 para el backend."
+  type        = string
+  default     = "mi-app-tfstate-bucket-695100305629" # El nombre que creaste
+}
+
+variable "backend_dynamo_table_name" {
+  description = "El nombre de la tabla DynamoDB para el backend."
+  type        = string
+  default     = "mi-app-terraform-lock" # El nombre que creaste
+}
