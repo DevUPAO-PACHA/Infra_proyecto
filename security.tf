@@ -2,7 +2,7 @@
 # Este es el "portero". Solo permite entrar tráfico web.
 resource "aws_security_group" "alb" {
   name        = "alb-sg"
-  description = "Permite tráfico HTTP/HTTPS al ALB"
+  description = "Permite trafico HTTP/HTTPS al ALB"
   vpc_id      = aws_vpc.main.id
 
   # Entrada: Permite HTTP (puerto 80) desde cualquier lugar.
