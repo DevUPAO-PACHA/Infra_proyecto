@@ -1,0 +1,47 @@
+# .github/workflows/terraform-apply.yml
+
+name: 'Terraform Apply (Main)'
+
+# --- El Disparador Clave ---
+on:
+  push:
+    branches:
+      - main  # Se ejecuta SOLO en 'push' a 'main' (ej: un merge)
+    paths:
+      - '**.tf' # Y solo si los archivos .tf cambiaron
+      - '**.tfvars'
+
+jobs:
+  terraform-apply:
+    name: 'Terraform Apply'
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write   # Necesario para OIDC
+      contents: read    # Necesario para checkout
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # --- ¡AQUÍ VA TU NUEVA LLAVE! ---
+          role-to-assume: arn:aws:iam::695100305629:role/github-actions-apply-role # <-- PEGA TU 'apply_role_arn'
+          aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0 # Puedes fijar la versión
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Apply
+        id: apply
+        # -auto-approve es crucial para un pipeline
+        # Le dice a Terraform "no me preguntes 'yes', solo hazlo"
+        run: terraform apply -auto-approve

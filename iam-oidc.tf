@@ -89,3 +89,93 @@ output "plan_role_arn" {
   description = "ARN del rol para el pipeline de 'plan'"
   value       = aws_iam_role.github_actions_plan.arn
 }
+
+# --- AÑADIR ESTE CÓDIGO AL FINAL DE iam-oidc.tf ---
+
+# --- 7. Rol de IAM para "Apply" (El Constructor) ---
+resource "aws_iam_role" "github_actions_apply" {
+  name = "github-actions-apply-role"
+
+  # Política de confianza:
+  # Confía en GitHub, PERO SOLO para la rama 'main'.
+  # ¡Nunca permitas que un PR ejecute 'apply'!
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.github.arn
+        },
+        Action = "sts:AssumeRoleWithWebIdentity",
+        Condition = {
+          StringLike = {
+            # Esta es la diferencia clave:
+            # "ref:refs/heads/main" significa "solo la rama main".
+            "token.actions.githubusercontent.com:sub" : "repo:DevUPAO-PACHA/Infra_proyecto:ref:refs/heads/main"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# --- 8. Permisos de "Apply" ---
+#
+# ----------------- ¡¡ADVERTENCIA!! -----------------
+# Le estamos dando 'AdministratorAccess'. Esto da poder TOTAL sobre tu cuenta.
+# Es la forma más fácil de empezar nuestro tutorial.
+# En una empresa real, deberías crear una política personalizada
+# con los permisos mínimos necesarios.
+# ---------------------------------------------------
+resource "aws_iam_role_policy_attachment" "apply_admin_access" {
+  role       = aws_iam_role.github_actions_apply.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+# --- 9. Output para el nuevo ARN ---
+output "apply_role_arn" {
+  description = "ARN del rol para el pipeline de 'apply'"
+  value       = aws_iam_role.github_actions_apply.arn
+}
+
+# --- AÑADIR ESTE CÓDIGO AL FINAL DE iam-oidc.tf ---
+
+# --- 10. Rol de IAM para "Destroy" (Manual) ---
+resource "aws_iam_role" "github_actions_destroy" {
+  name = "github-actions-destroy-role"
+
+  # Política de confianza:
+  # Solo confía en la rama 'main', que es donde vivirá
+  # el workflow manual 'workflow_dispatch'.
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Effect = "Allow",
+        Principal = {
+          Federated = aws_iam_openid_connect_provider.github.arn
+        },
+        Action = "sts:AssumeRoleWithWebIdentity",
+        Condition = {
+          StringLike = {
+            "token.actions.githubusercontent.com:sub" : "repo:DevUPAO-PACHA/Infra_proyecto:ref:refs/heads/main"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# --- 11. Permisos de "Destroy" ---
+# También necesita 'AdministratorAccess' para poder borrar todo.
+resource "aws_iam_role_policy_attachment" "destroy_admin_access" {
+  role       = aws_iam_role.github_actions_destroy.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+# --- 12. Output para el nuevo ARN ---
+output "destroy_role_arn" {
+  description = "ARN del rol para el pipeline de 'destroy'"
+  value       = aws_iam_role.github_actions_destroy.arn
+}
