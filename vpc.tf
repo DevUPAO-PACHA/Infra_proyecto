@@ -146,3 +146,5 @@ resource "aws_db_subnet_group" "aurora" {
     Name = "Grupo de subredes para Aurora"
   }
 }
+
+# Esto es una prueba del pipeline.
