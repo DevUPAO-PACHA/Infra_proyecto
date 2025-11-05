@@ -51,13 +51,13 @@ variable "db_username" {
 variable "api_image_uri" {
   description = "URI de la imagen Docker para la API Spring Boot (ej: desde ECR)."
   type        = string
-  # No hay 'default'. Esto DEBE ser proporcionado por el pipeline.
+  default     = "placeholder"
 }
 
 variable "worker_image_uri" {
   description = "URI de la imagen Docker para el Worker (ej: desde ECR)."
   type        = string
-  # No hay 'default'.
+  default     = "placeholder"
 }
 
 variable "backend_s3_bucket_name" {

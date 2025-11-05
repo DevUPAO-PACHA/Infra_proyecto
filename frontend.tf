@@ -93,7 +93,7 @@ resource "aws_cloudfront_distribution" "main" {
 
   # --- Comportamiento de API (Redirige al ALB) ---
   # ¡La conexión clave!
-  cache_behavior {
+  ordered_cache_behavior {
     path_pattern     = "/api/*" # Todas las peticiones a /api...
     target_origin_id = "ALB-API-Backend" # ...van al ALB.
 
