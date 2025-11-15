@@ -38,7 +38,7 @@ resource "aws_security_group" "alb" {
 # Este es el guardia de la API. Solo deja pasar al "portero" (ALB).
 resource "aws_security_group" "fargate_api" {
   name        = "fargate-api-sg"
-  description = "Permite tráfico desde el ALB al puerto de la app"
+  description = "Permite trafico desde el ALB al puerto de la app"
   vpc_id      = aws_vpc.main.id
 
   # Entrada: Solo permite tráfico en el puerto de la app (8000)
