@@ -17,7 +17,7 @@ resource "aws_lb" "main" {
 resource "aws_lb_target_group" "api" {
   name        = "api-fargate-tg"
   port        = var.app_port # Puerto 8000
-  protocol    = "HTTP"
+  protocol    = "HTTPS"
   vpc_id      = aws_vpc.main.id
   target_type = "ip" # REQUERIDO para Fargate
 
@@ -33,10 +33,10 @@ resource "aws_lb_target_group" "api" {
 
 # --- 3. Listener del ALB ---
 # Escucha en el puerto 80 (HTTP) y reenvía el tráfico al Target Group.
-resource "aws_lb_listener" "http" {
+resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
-  protocol          = "HTTP"
+  protocol          = "HTTPS"
 
   default_action {
     type             = "forward"
