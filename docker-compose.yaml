@@ -7,3 +7,9 @@ services:
     container_name: sonar
     ports:
       - 9000:9000
+
+sonar-scanner \
+  -Dsonar.projectKey=aresInfra \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=http://localhost:9000 \
+  -Dsonar.token=sqp_ed3e82cc7278bcb50a41dd3dd4e07f9196d9883a
