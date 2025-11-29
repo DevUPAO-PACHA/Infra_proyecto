@@ -1,0 +1,9 @@
+version: '3.9'
+
+services:
+  sonar:
+
+    image: sonarqube:latest
+    container_name: sonar
+    ports:
+      - 9000:9000
