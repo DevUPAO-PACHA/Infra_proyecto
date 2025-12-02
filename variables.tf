@@ -71,3 +71,13 @@ variable "backend_dynamo_table_name" {
   type        = string
   default     = "mi-app-terraform-lock" # El nombre que creaste
 }
+
+variable "app_name" {
+  type    = string
+  default = "ares-iac"
+}
+
+variable "log_retention_days" {
+  type    = number
+  default = 30
+}

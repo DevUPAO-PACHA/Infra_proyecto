@@ -2,12 +2,12 @@
 resource "random_password" "db" {
   length           = 16
   special          = true
-  override_special = "_%@"
+  override_special = "_#"
 }
 
 # --- 2. Crear el Secreto en AWS Secrets Manager ---
 resource "aws_secretsmanager_secret" "db" {
-  name = "mi-app/db-password"
+  name = "${var.app_name}/db-password"
 
   tags = {
     Name = "Secreto de BD para mi-app"
@@ -24,9 +24,6 @@ resource "aws_secretsmanager_secret_version" "db" {
 resource "aws_rds_cluster" "aurora" {
   cluster_identifier = "mi-app-aurora-cluster"
   engine             = "aurora-mysql"
-
-  # Si quieres versión automática no pongas engine_version.
-  # engine_version = "8.0.mysql_aurora.3.05.2"
 
   availability_zones     = var.availability_zones
   database_name          = "miAppDB"

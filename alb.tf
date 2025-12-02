@@ -7,7 +7,7 @@ resource "aws_lb" "main" {
   subnets            = aws_subnet.public.*.id      # Vive en las subredes PÚBLICAS
 
   tags = {
-    Name = "mi-app-alb"
+    Name = "${var.app_name}-alb"
   }
 }
 
@@ -15,15 +15,16 @@ resource "aws_lb" "main" {
 # El ALB no envía tráfico a Fargate, lo envía a un "grupo".
 # Fargate se registra en este grupo.
 resource "aws_lb_target_group" "api" {
-  name        = "api-fargate-tg"
-  port        = var.app_port # Puerto 8000
-  protocol    = "HTTPS"
+  name        = "${var.app_name}-tg"
+  port        = var.app_port
+  protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
-  target_type = "ip" # REQUERIDO para Fargate
+  target_type = "ip"
 
   health_check {
     enabled = true
-    path    = "/actuator/health" # Endpoint de salud de Spring Boot
+    path    = "/actuator/health"
+    protocol = "HTTP"
   }
 
   tags = {
@@ -33,13 +34,23 @@ resource "aws_lb_target_group" "api" {
 
 # --- 3. Listener del ALB ---
 # Escucha en el puerto 80 (HTTP) y reenvía el tráfico al Target Group.
-resource "aws_lb_listener" "https" {
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
-  protocol          = "HTTPS"
+  protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.api.arn
+    type = "forward"
+    target_group_arn = aws_lb_target_group.api.arn 
   }
 }
+/* Esto es solo por si fuera con dominio real pero no hay pue :c
+resource "aws_lb_listener" "https" { 
+  load_balancer_arn = aws_lb.main.arn 
+  port = 443 
+  protocol = "HTTPS"
+  default_action { 
+    type = "forward" 
+    target_group_arn = aws_lb_target_group.api.arn 
+  } 
+}*/

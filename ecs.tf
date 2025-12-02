@@ -1,47 +1,25 @@
-# --- 1. El Cluster ECS ---
-# Es solo un agrupador lógico para tus servicios.
 resource "aws_ecs_cluster" "main" {
-  name = "mi-app-cluster"
+  name = "${var.app_name}-cluster"
 
   tags = {
-    Name = "mi-app-cluster"
+    Name = "${var.app_name}-cluster"
   }
 }
 
-# --- 2. Grupos de Logs en CloudWatch ---
-resource "aws_cloudwatch_log_group" "api" {
-  name = "/ecs/mi-app-api"
-  retention_in_days = 7 # Guarda logs por 7 días
-
-  tags = {
-    Name = "log-group-api"
-  }
-}
-
-resource "aws_cloudwatch_log_group" "worker" {
-  name = "/ecs/mi-app-worker"
-  retention_in_days = 7
-
-  tags = {
-    Name = "log-group-worker"
-  }
-}
-
-# --- 3. Definición de Tarea de la API (El plano de la API) ---
+# --- 3. API Task Definition CORREGIDA ---
 resource "aws_ecs_task_definition" "api" {
-  family                   = "mi-app-api"
-  network_mode             = "awsvpc" # Requerido por Fargate
+  family                   = "${var.app_name}-api"
+  network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 512  # 0.5 vCPU
-  memory                   = 1024 # 1 GB RAM
+  cpu                      = 512
+  memory                   = 1024
 
-  execution_role_arn = aws_iam_role.ecs_execution_role.arn # Rol para bajar imagen/logs
-  task_role_arn      = aws_iam_role.api_task_role.arn      # Rol para la App (SQS, etc)
+  execution_role_arn = aws_iam_role.ecs_execution_role.arn
+  task_role_arn      = aws_iam_role.api_task_role.arn
 
-  # Esta es la definición de tu contenedor Spring Boot
   container_definitions = jsonencode([
     {
-      name      = "mi-app-api-container"
+      name      = "${var.app_name}-api-container"
       image     = var.api_image_uri
       essential = true
 
@@ -52,30 +30,34 @@ resource "aws_ecs_task_definition" "api" {
         }
       ]
 
-      # Conexión a CloudWatch Logs
+      # CloudWatch centralizado
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.api.name
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_api.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "api"
         }
       }
 
-      # Variables de Entorno (¡Importante!)
       environment = [
-        { name = "SPRING_DATASOURCE_URL", value = "jdbc:mysql://${aws_rds_cluster.aurora.endpoint}:3306/${aws_rds_cluster.aurora.database_name}" },
-        { name = "SQS_QUEUE_URL", value = aws_sqs_queue.reservas_queue.id }
-      ]
-
-      # Inyección de Secretos (¡Magia!)
-      secrets = [
         {
-          name      = "SPRING_DATASOURCE_USERNAME",
-          valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${var.db_username}" # Nota: Esto es un truco para pasar un valor no-secreto
+          name  = "SPRING_DATASOURCE_URL"
+          value = "jdbc:mysql://${aws_rds_cluster.aurora.endpoint}:3306/${aws_rds_cluster.aurora.database_name}"
         },
         {
-          name      = "SPRING_DATASOURCE_PASSWORD",
+          name  = "SQS_QUEUE_URL"
+          value = aws_sqs_queue.reservas_queue.id
+        }
+      ]
+
+      secrets = [
+        {
+          name      = "SPRING_DATASOURCE_USERNAME"
+          valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${var.db_username}"
+        },
+        {
+          name      = "SPRING_DATASOURCE_PASSWORD"
           valueFrom = aws_secretsmanager_secret.db.arn
         }
       ]
@@ -83,52 +65,57 @@ resource "aws_ecs_task_definition" "api" {
   ])
 }
 
-# --- 4. Definición de Tarea del Worker (El plano del Worker) ---
+# --- Worker Corregido ---
 resource "aws_ecs_task_definition" "worker" {
-  family                   = "mi-app-worker"
+  family                   = "${var.app_name}-worker"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 256  # 0.25 vCPU
-  memory                   = 512  # 0.5 GB RAM
+  cpu                      = 256
+  memory                   = 512
 
   execution_role_arn = aws_iam_role.ecs_execution_role.arn
   task_role_arn      = aws_iam_role.worker_task_role.arn
 
   container_definitions = jsonencode([
     {
-      name      = "mi-app-worker-container"
+      name      = "${var.app_name}-worker-container"
       image     = var.worker_image_uri
       essential = true
-
-      # Sin portMappings, porque no recibe tráfico entrante.
 
       logConfiguration = {
         logDriver = "awslogs"
         options = {
-          "awslogs-group"         = aws_cloudwatch_log_group.worker.name
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_worker.name
           "awslogs-region"        = var.aws_region
           "awslogs-stream-prefix" = "worker"
         }
       }
 
       environment = [
-        { name = "SPRING_DATASOURCE_URL", value = "jdbc:mysql://${aws_rds_cluster.aurora.endpoint}:3306/${aws_rds_cluster.aurora.database_name}" },
-        { name = "SQS_QUEUE_URL", value = aws_sqs_queue.reservas_queue.id }
+        {
+          name  = "SPRING_DATASOURCE_URL"
+          value = "jdbc:mysql://${aws_rds_cluster.aurora.endpoint}:3306/${aws_rds_cluster.aurora.database_name}"
+        },
+        {
+          name  = "SQS_QUEUE_URL"
+          value = aws_sqs_queue.reservas_queue.id
+        }
       ]
 
       secrets = [
         {
-          name      = "SPRING_DATASOURCE_USERNAME",
+          name      = "SPRING_DATASOURCE_USERNAME"
           valueFrom = "arn:aws:ssm:${var.aws_region}:${data.aws_caller_identity.current.account_id}:parameter/${var.db_username}"
         },
         {
-          name      = "SPRING_DATASOURCE_PASSWORD",
+          name      = "SPRING_DATASOURCE_PASSWORD"
           valueFrom = aws_secretsmanager_secret.db.arn
         }
       ]
     }
   ])
 }
+
 
 # --- 5. Servicio Fargate de la API ---
 # Esto *ejecuta* la definición de tarea de la API y la mantiene viva.
@@ -137,7 +124,7 @@ resource "aws_ecs_service" "api" {
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.api.arn
   launch_type     = "FARGATE"
-  desired_count   = 2 # Ejecuta 2 copias para Alta Disponibilidad
+  desired_count   = 2
 
   # Configuración de Red
   network_configuration {
@@ -148,7 +135,7 @@ resource "aws_ecs_service" "api" {
   # Conexión al Load Balancer
   load_balancer {
     target_group_arn = aws_lb_target_group.api.arn
-    container_name   = "mi-app-api-container"
+    container_name   = "${var.app_name}-api-container"
     container_port   = var.app_port
   }
 
