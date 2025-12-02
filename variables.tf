@@ -10,10 +10,8 @@ variable "vpc_cidr" {
   default     = "10.0.0.0/16"
 }
 
-# --- Subredes para 2 Zonas de Disponibilidad (Multi-AZ) ---
-
 variable "availability_zones" {
-  description = "Zonas de Disponibilidad (2) a usar."
+  description = " 2 Zonas de Disponibilidad donde se crearan los recursos."
   type        = list(string)
   default     = ["us-east-1a", "us-east-1b"]
 }
@@ -37,7 +35,7 @@ variable "db_subnets_cidr" {
 }
 
 variable "app_port" {
-  description = "Puerto en el que escucha la aplicación Spring Boot (Diagrama: 8000)."
+  description = "Puerto en el que escucha la aplicación Spring Boot"
   type        = number
   default     = 8000
 }
@@ -49,13 +47,13 @@ variable "db_username" {
 }
 
 variable "api_image_uri" {
-  description = "URI de la imagen Docker para la API Spring Boot (ej: desde ECR)."
+  description = "URI de la imagen Docker para la API Spring Boot."
   type        = string
   default     = "placeholder"
 }
 
 variable "worker_image_uri" {
-  description = "URI de la imagen Docker para el Worker (ej: desde ECR)."
+  description = "URI de la imagen Docker para el Worker."
   type        = string
   default     = "placeholder"
 }
@@ -78,6 +76,7 @@ variable "app_name" {
 }
 
 variable "log_retention_days" {
+  description = "Número de días que los logs serán retenidos en la infraestructura"
   type    = number
   default = 30
 }
