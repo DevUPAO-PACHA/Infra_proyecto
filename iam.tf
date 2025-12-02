@@ -15,13 +15,11 @@ resource "aws_iam_role" "ecs_execution_role" {
   })
 }
 
-# Política oficial de AWS (ECR + Logs)
 resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# Política SOLO para SecretsManager (evitar dar SQS/SES aquí)
 resource "aws_iam_policy" "execution_secrets_policy" {
   name = "${var.app_name}-execution-secrets-policy"
 
@@ -39,10 +37,6 @@ resource "aws_iam_role_policy_attachment" "execution_secrets_attach" {
   role       = aws_iam_role.ecs_execution_role.name
   policy_arn = aws_iam_policy.execution_secrets_policy.arn
 }
-
-###############################################
-# 2. API TASK ROLE
-###############################################
 
 resource "aws_iam_role" "api_task_role" {
   name = "${var.app_name}-api-task-role"
@@ -83,10 +77,6 @@ resource "aws_iam_role_policy_attachment" "api_permissions_attach" {
   role       = aws_iam_role.api_task_role.name
   policy_arn = aws_iam_policy.api_permissions.arn
 }
-
-###############################################
-# 3. WORKER TASK ROLE
-###############################################
 
 resource "aws_iam_role" "worker_task_role" {
   name = "${var.app_name}-worker-task-role"
