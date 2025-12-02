@@ -1,6 +1,3 @@
-#######################################
-# CLOUDWATCH LOG GROUPS
-#######################################
 
 resource "aws_cloudwatch_log_group" "ecs_api" {
   name              = "/ecs/${var.app_name}-api"
@@ -37,11 +34,6 @@ resource "aws_cloudwatch_log_group" "alb_logs" {
     Service = "${var.app_name}-alb"
   }
 }
-
-
-#######################################
-# OUTPUTS
-#######################################
 
 output "cloudwatch_log_groups" {
   value = {

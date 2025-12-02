@@ -1,8 +1,4 @@
 
-#######################################
-# IAM ROLE FOR GRAFANA TO READ CLOUDWATCH
-#######################################
-
 resource "aws_iam_role" "grafana_role" {
   name = "${var.app_name}-grafana-role"
 
@@ -17,8 +13,6 @@ resource "aws_iam_role" "grafana_role" {
     }]
   })
 }
-
-
 
 resource "aws_iam_policy" "grafana_cloudwatch_policy" {
   name = "${var.app_name}-grafana-cloudwatch-policy"
@@ -64,13 +58,6 @@ resource "aws_grafana_workspace" "this" {
     Service = "${var.app_name}-observability"
   }
 }
-
-
-
-#######################################
-# OUTPUTS
-#######################################
-
 
 output "grafana_workspace_url" {
   value = aws_grafana_workspace.this.endpoint
