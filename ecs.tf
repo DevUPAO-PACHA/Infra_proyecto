@@ -6,7 +6,6 @@ resource "aws_ecs_cluster" "main" {
   }
 }
 
-# --- 3. API Task Definition CORREGIDA ---
 resource "aws_ecs_task_definition" "api" {
   family                   = "${var.app_name}-api"
   network_mode             = "awsvpc"
@@ -30,7 +29,6 @@ resource "aws_ecs_task_definition" "api" {
         }
       ]
 
-      # CloudWatch centralizado
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -65,7 +63,6 @@ resource "aws_ecs_task_definition" "api" {
   ])
 }
 
-# --- Worker Corregido ---
 resource "aws_ecs_task_definition" "worker" {
   family                   = "${var.app_name}-worker"
   network_mode             = "awsvpc"
@@ -116,9 +113,6 @@ resource "aws_ecs_task_definition" "worker" {
   ])
 }
 
-
-# --- 5. Servicio Fargate de la API ---
-# Esto *ejecuta* la definición de tarea de la API y la mantiene viva.
 resource "aws_ecs_service" "api" {
   name            = "mi-app-api-service"
   cluster         = aws_ecs_cluster.main.id
@@ -126,36 +120,29 @@ resource "aws_ecs_service" "api" {
   launch_type     = "FARGATE"
   desired_count   = 2
 
-  # Configuración de Red
   network_configuration {
     subnets         = aws_subnet.private.*.id       # Vive en subredes PRIVADAS
     security_groups = [aws_security_group.fargate_api.id]
   }
 
-  # Conexión al Load Balancer
   load_balancer {
     target_group_arn = aws_lb_target_group.api.arn
     container_name   = "${var.app_name}-api-container"
     container_port   = var.app_port
   }
 
-  # Espera a que el ALB esté listo antes de intentar registrarse
   depends_on = [aws_lb_listener.http]
 }
 
-# --- 6. Servicio Fargate del Worker ---
-# Ejecuta la definición de tarea del Worker
 resource "aws_ecs_service" "worker" {
   name            = "mi-app-worker-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.worker.arn
   launch_type     = "FARGATE"
-  desired_count   = 1 # Puedes escalar esto con AutoScaling basado en la cola SQS
+  desired_count   = 1
 
   network_configuration {
     subnets         = aws_subnet.private.*.id
     security_groups = [aws_security_group.fargate_worker.id]
   }
-
-  # Sin bloque 'load_balancer'
 }
