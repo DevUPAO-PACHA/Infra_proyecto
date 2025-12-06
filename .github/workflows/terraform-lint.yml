@@ -20,14 +20,90 @@ jobs:
         with:
           terraform_version: 1.5.0
 
-      # Lint (formato)
+      #1 Lint (formato)
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
-      # Init sin backend (NO toca AWS)
+      #2 Init sin backend (NO toca AWS)
       - name: Terraform Init (No backend)
         run: terraform init -backend=false
 
-      # Validación sintáctica
+      #3 Validación sintáctica
       - name: Terraform Validate
         run: terraform validate
+
+      #4 Linter de Terraform (calidad de código)
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: latest
+
+      - name: TFLint Init
+        run: tflint --init
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Run TFLint
+        run: tflint -f compact
+
+      #5 Análisis de seguridad estático
+      - name: tfsec - Security Scan
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: .
+          soft_fail: false
+
+      #6 No tfstate en el repositorio
+      - name: Ensure no Terraform state files committed
+        run: |
+          set -e
+          FILES=$(git ls-files '*tfstate*' || true)
+          if [ -n "$FILES" ]; then
+            echo "Se encontraron archivos de estado de Terraform en el repo (NO deben versionarse):"
+            echo "$FILES"
+            exit 1
+          fi
+
+      #7 No carpeta .terraform versionada
+      - name: Ensure .terraform directory is not committed
+        run: |
+          set -e
+          FILES=$(git ls-files '.terraform/*' || true)
+          if [ -n "$FILES" ]; then
+            echo "La carpeta .terraform no debe estar versionada en Git:"
+            echo "$FILES"
+            exit 1
+          fi
+
+      #8 No dejar TODO/FIXME en código Terraform
+      - name: Check for TODO/FIXME comments in Terraform files
+        run: |
+          set -e
+          FILES=$(git ls-files '*.tf')
+          if [ -z "$FILES" ]; then
+            exit 0
+          fi
+          if grep -R -nE "TODO|FIXME" $FILES; then
+            echo "Se encontraron comentarios TODO/FIXME en archivos .tf. Límpialos antes de mergear."
+            exit 1
+          fi
+
+      #9 Verificar que exista versions.tf (buena práctica)
+      - name: Check versions.tf exists
+        run: |
+          set -e
+          if [ ! -f "versions.tf" ]; then
+            echo "No se encontró versions.tf. Es recomendable definir required_version y providers ahí."
+            exit 1
+          fi
+
+      #10 Escaneo rápido de posibles claves AWS expuestas
+      - name: Check for possible hard-coded AWS access keys
+        run: |
+          set -e
+          if git grep -n "AKIA" -- . >/tmp/aws_keys_found 2>&1; then
+            echo "Posibles claves de acceso AWS encontradas en el repo:"
+            cat /tmp/aws_keys_found
+            echo "Revisa que no estés commiteando credenciales."
+            exit 1
+          fi
