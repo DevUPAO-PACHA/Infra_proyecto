@@ -1,0 +1,33 @@
+name: "Terraform Lint & Validate"
+
+on:
+  pull_request:
+    paths:
+      - "**.tf"
+      - "**.tfvars"
+
+jobs:
+  terraform-lint:
+    name: "Lint & Validate Terraform"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      # Lint (formato)
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      # Init sin backend (NO toca AWS)
+      - name: Terraform Init (No backend)
+        run: terraform init -backend=false
+
+      # Validación sintáctica
+      - name: Terraform Validate
+        run: terraform validate

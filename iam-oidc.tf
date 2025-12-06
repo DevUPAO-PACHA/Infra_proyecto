@@ -1,4 +1,4 @@
-
+# 1) OIDC Provider
 resource "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
@@ -8,7 +8,7 @@ resource "aws_iam_openid_connect_provider" "github" {
   ]
 }
 
-#  PLAN ROLE
+# 2) PLAN ROLE (Pull Requests)
 resource "aws_iam_role" "github_actions_plan" {
   name = "${var.app_name}-${var.environment}-gha-plan-role"
 
@@ -21,6 +21,7 @@ resource "aws_iam_role" "github_actions_plan" {
       },
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
+        # Permite PRs en este repo específicamente
         StringLike = {
           "token.actions.githubusercontent.com:sub" : "repo:DevUPAO-PACHA/Infra_proyecto:pull_request"
         }
@@ -42,13 +43,13 @@ resource "aws_iam_policy" "plan_backend_access" {
     Statement = [
       {
         Effect   = "Allow",
-        Action   = "s3:GetObject",
-        Resource = "arn:aws:s3:::${var.backend_s3_bucket_name}/${var.environment}/terraform.tfstate"
+        Action   = ["s3:GetObject"],
+        Resource = "arn:aws:s3:::tfstate-dev-974646089872/dev/terraform.tfstate"
       },
       {
         Effect   = "Allow",
-        Action   = "s3:ListBucket",
-        Resource = "arn:aws:s3:::${var.backend_s3_bucket_name}"
+        Action   = ["s3:ListBucket"],
+        Resource = "arn:aws:s3:::tfstate-dev-974646089872"
       },
       {
         Effect   = "Allow",
@@ -57,7 +58,7 @@ resource "aws_iam_policy" "plan_backend_access" {
           "dynamodb:PutItem",
           "dynamodb:DeleteItem"
         ],
-        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${var.backend_dynamo_table_name}"
+        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/tf-lock-dev"
       }
     ]
   })
@@ -74,11 +75,10 @@ resource "aws_iam_role_policy_attachment" "plan_backend_access_attach" {
 }
 
 output "plan_role_arn" {
-  description = "ARN del rol para el pipeline de 'plan'"
-  value       = aws_iam_role.github_actions_plan.arn
+  value = aws_iam_role.github_actions_plan.arn
 }
 
-#  APPLY ROLE (solo producción desde main)
+# 3) APPLY ROLE (Push a main)
 resource "aws_iam_role" "github_actions_apply" {
   name = "${var.app_name}-${var.environment}-gha-apply-role"
 
@@ -91,6 +91,7 @@ resource "aws_iam_role" "github_actions_apply" {
       },
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
+        # Solo cuando se ejecuta en branch `main`
         StringLike = {
           "token.actions.githubusercontent.com:sub" : "repo:DevUPAO-PACHA/Infra_proyecto:ref:refs/heads/main"
         }
@@ -110,11 +111,10 @@ resource "aws_iam_role_policy_attachment" "apply_admin_access" {
 }
 
 output "apply_role_arn" {
-  description = "ARN del rol para el pipeline de 'apply'"
-  value       = aws_iam_role.github_actions_apply.arn
+  value = aws_iam_role.github_actions_apply.arn
 }
 
-#  DESTROY ROLE (manual)
+# 4) DESTROY ROLE (Manual workflow_dispatch)
 resource "aws_iam_role" "github_actions_destroy" {
   name = "${var.app_name}-${var.environment}-gha-destroy-role"
 
@@ -127,7 +127,7 @@ resource "aws_iam_role" "github_actions_destroy" {
       },
       Action = "sts:AssumeRoleWithWebIdentity",
       Condition = {
-        # Solo permite ejecución manual ("workflow_dispatch")
+        # Igual que apply, destroy solo debe funcionar en main
         StringLike = {
           "token.actions.githubusercontent.com:sub" : "repo:DevUPAO-PACHA/Infra_proyecto:ref:refs/heads/main"
         }
@@ -147,6 +147,5 @@ resource "aws_iam_role_policy_attachment" "destroy_admin_access" {
 }
 
 output "destroy_role_arn" {
-  description = "ARN del rol para el pipeline de 'destroy'"
-  value       = aws_iam_role.github_actions_destroy.arn
+  value = aws_iam_role.github_actions_destroy.arn
 }
