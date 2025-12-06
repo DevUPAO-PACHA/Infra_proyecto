@@ -89,11 +89,11 @@ jobs:
           fi
 
       #9 Verificar que exista versions.tf (buena práctica)
-      - name: Check versions.tf exists
+      - name: Check providers.tf exists
         run: |
           set -e
-          if [ ! -f "versions.tf" ]; then
-            echo "No se encontró versions.tf. Es recomendable definir required_version y providers ahí."
+          if [ ! -f "providers.tf" ]; then
+            echo "No se encontró providers.tf. Es recomendable definir providers ahí."
             exit 1
           fi
 
