@@ -55,3 +55,20 @@ resource "aws_s3_bucket" "lb_logs" {
     Name = "${var.app_name}-${var.environment}-alb-logs"
   }
 }
+
+resource "aws_s3_bucket_policy" "lb_logs_policy" {
+  bucket = aws_s3_bucket.lb_logs.id
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Sid       = "AWSALBLogs"
+        Effect    = "Allow"
+        Principal = { AWS = "arn:aws:iam::127311923021:root" }
+        Action    = "s3:PutObject"
+        Resource  = "${aws_s3_bucket.lb_logs.arn}/*"
+      }
+    ]
+  })
+}

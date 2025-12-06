@@ -6,8 +6,7 @@ resource "random_password" "db" {
 
 resource "aws_secretsmanager_secret" "db" {
   name       = "${var.app_name}-${var.environment}-db-password"
-  kms_key_id = aws_kms_key.secrets_key.id
-
+  kms_key_id = aws_kms_key.secrets_key.arn
 
   tags = {
     Name        = "${var.app_name}-${var.environment}-db-secret"
@@ -23,8 +22,7 @@ resource "aws_secretsmanager_secret_version" "db" {
 resource "aws_rds_cluster" "aurora" {
   cluster_identifier = "${var.app_name}-${var.environment}-aurora-cluster"
   engine             = "aurora-mysql"
-  kms_key_id         = aws_kms_key.secrets_key.id
-
+  kms_key_id         = aws_kms_key.secrets_key.arn
 
   availability_zones                  = var.availability_zones
   database_name                       = "miAppDB"
