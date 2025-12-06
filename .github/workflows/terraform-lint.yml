@@ -101,7 +101,8 @@ jobs:
       - name: Check for possible hard-coded AWS access keys
         run: |
           set -e
-          if git grep -n "AKIA" -- . >/tmp/aws_keys_found 2>&1; then
+          # Excluir la carpeta .github porque contiene la palabra "AKIA" en el script
+          if git grep -n "AKIA" -- . ":(exclude).github/workflows/*" >/tmp/aws_keys_found 2>&1; then
             echo "Posibles claves de acceso AWS encontradas en el repo:"
             cat /tmp/aws_keys_found
             echo "Revisa que no estés commiteando credenciales."
