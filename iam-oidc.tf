@@ -1,6 +1,6 @@
 # 1) OIDC Provider
 resource "aws_iam_openid_connect_provider" "github" {
-  url = "https://token.actions.githubusercontent.com"
+  url            = "https://token.actions.githubusercontent.com"
   client_id_list = ["sts.amazonaws.com"]
   thumbprint_list = [
     "6938fd4d9c758c50a11cb01a15a519e098a0c71e",
@@ -52,8 +52,8 @@ resource "aws_iam_policy" "plan_backend_access" {
         Resource = "arn:aws:s3:::tfstate-dev-974646089872"
       },
       {
-        Effect   = "Allow",
-        Action   = [
+        Effect = "Allow",
+        Action = [
           "dynamodb:GetItem",
           "dynamodb:PutItem",
           "dynamodb:DeleteItem"

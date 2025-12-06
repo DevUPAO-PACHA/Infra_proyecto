@@ -40,7 +40,7 @@ resource "aws_security_group" "fargate_api" {
 
   ingress {
     protocol        = "tcp"
-    description = "Ingreso de seguridad fargate_api"
+    description     = "Ingreso de seguridad fargate_api"
     from_port       = var.app_port
     to_port         = var.app_port
     security_groups = [aws_security_group.alb.id]
@@ -84,9 +84,9 @@ resource "aws_security_group" "rds" {
 
   ingress {
     description = "Ingreso de seguridad rds"
-    protocol        = "tcp"
-    from_port       = 3306
-    to_port         = 3306
+    protocol    = "tcp"
+    from_port   = 3306
+    to_port     = 3306
     security_groups = [
       aws_security_group.fargate_api.id,
       aws_security_group.fargate_worker.id

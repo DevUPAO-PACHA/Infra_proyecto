@@ -41,7 +41,7 @@ resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTPS"
-  ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api.arn
@@ -49,7 +49,7 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_s3_bucket" "lb_logs" {
-  bucket = "${var.app_name}-${var.environment}-alb-logs"  # Nombre del bucket
+  bucket = "${var.app_name}-${var.environment}-alb-logs" # Nombre del bucket
 
   tags = {
     Name = "${var.app_name}-${var.environment}-alb-logs"

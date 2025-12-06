@@ -147,9 +147,9 @@ resource "aws_iam_policy" "worker_permissions" {
         Resource = [aws_sqs_queue.reservas_queue.arn]
       },
       {
-        Sid    = "SendEmail",
-        Effect = "Allow",
-        Action = ["ses:SendEmail"],
+        Sid      = "SendEmail",
+        Effect   = "Allow",
+        Action   = ["ses:SendEmail"],
         Resource = "*"
       }
     ]
@@ -180,13 +180,13 @@ resource "aws_iam_role" "backup_role" {
 }
 
 resource "aws_iam_role_policy" "backup_role_policy" {
-  name   = "${var.app_name}-${var.environment}-backup-policy"
-  role   = aws_iam_role.backup_role.id
+  name = "${var.app_name}-${var.environment}-backup-policy"
+  role = aws_iam_role.backup_role.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action   = [
+        Action = [
           "rds:DescribeDBClusters",
           "rds:DescribeDBInstances",
           "rds:CreateDBClusterSnapshot",

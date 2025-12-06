@@ -80,8 +80,8 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   ordered_cache_behavior {
-    path_pattern           = "/api/*"
-    target_origin_id       = "${var.app_name}-${var.environment}-alb-origin"
+    path_pattern     = "/api/*"
+    target_origin_id = "${var.app_name}-${var.environment}-alb-origin"
 
     allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
     cached_methods         = ["GET", "HEAD"]

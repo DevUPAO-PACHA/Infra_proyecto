@@ -2,7 +2,7 @@ environment = "prod"
 
 aws_region = "us-east-1"
 
-app_name = "ares-iac-prod"
+app_name    = "ares-iac-prod"
 db_username = "dbadmin"
 
 vpc_cidr = "10.2.0.0/16"
@@ -18,5 +18,5 @@ log_retention_days = 30
 api_image_uri    = "111111111111.dkr.ecr.us-east-1.amazonaws.com/mi-api:prod"
 worker_image_uri = "111111111111.dkr.ecr.us-east-1.amazonaws.com/mi-worker:prod"
 
-backend_s3_bucket_name     = "tfstate-prod-974646089872"
-backend_dynamo_table_name  = "tf-lock-prod"
+backend_s3_bucket_name    = "tfstate-prod-974646089872"
+backend_dynamo_table_name = "tf-lock-prod"

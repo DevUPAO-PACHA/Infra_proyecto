@@ -141,7 +141,7 @@ resource "aws_cloudwatch_log_group" "flow_log" {
 }
 
 resource "aws_iam_role" "vpc_flow_log_role" {
-  name = "${var.app_name}-vpc-flow-log-role"
+  name               = "${var.app_name}-vpc-flow-log-role"
   assume_role_policy = data.aws_iam_policy_document.flow_log_assume_role.json
 }
 

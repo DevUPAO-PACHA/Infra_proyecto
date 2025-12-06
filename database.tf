@@ -5,10 +5,10 @@ resource "random_password" "db" {
 }
 
 resource "aws_secretsmanager_secret" "db" {
-  name = "${var.app_name}-${var.environment}-db-password"
+  name       = "${var.app_name}-${var.environment}-db-password"
   kms_key_id = aws_kms_key.secrets_key.id
 
-  
+
   tags = {
     Name        = "${var.app_name}-${var.environment}-db-secret"
     Environment = var.environment
@@ -23,23 +23,23 @@ resource "aws_secretsmanager_secret_version" "db" {
 resource "aws_rds_cluster" "aurora" {
   cluster_identifier = "${var.app_name}-${var.environment}-aurora-cluster"
   engine             = "aurora-mysql"
-  kms_key_id = aws_kms_key.secrets_key.id
-  
+  kms_key_id         = aws_kms_key.secrets_key.id
 
-  availability_zones     = var.availability_zones
-  database_name          = "miAppDB"
-  master_username        = var.db_username
-  master_password        = random_password.db.result
-  enabled_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
-  copy_tags_to_snapshot = true
+
+  availability_zones                  = var.availability_zones
+  database_name                       = "miAppDB"
+  master_username                     = var.db_username
+  master_password                     = random_password.db.result
+  enabled_cloudwatch_logs_exports     = ["audit", "error", "general", "slowquery"]
+  copy_tags_to_snapshot               = true
   iam_database_authentication_enabled = true
-  db_subnet_group_name   = aws_db_subnet_group.aurora.name
-  vpc_security_group_ids = [aws_security_group.rds.id]
-  skip_final_snapshot    = true
-  storage_encrypted      = true
-  deletion_protection = true
+  db_subnet_group_name                = aws_db_subnet_group.aurora.name
+  vpc_security_group_ids              = [aws_security_group.rds.id]
+  skip_final_snapshot                 = true
+  storage_encrypted                   = true
+  deletion_protection                 = true
 
-  backtrack_window    = 3600
+  backtrack_window = 3600
 
   serverlessv2_scaling_configuration {
     min_capacity = 0.5
