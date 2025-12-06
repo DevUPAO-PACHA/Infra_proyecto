@@ -85,7 +85,7 @@ resource "aws_backup_plan" "aws_backup_db" {
 resource "aws_backup_selection" "aurora_backup_selection" {
   iam_role_arn = aws_iam_role.backup_role.arn
   name         = "aurora_backup_selection"
-  plan_id      = aws_backup_plan.aurora_backup_plan.id
+  plan_id      = aws_backup_plan.aws_backup_db.id
 
   resources = [
     aws_rds_cluster.aurora.arn
