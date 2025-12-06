@@ -122,7 +122,7 @@ resource "aws_route_table_association" "database" {
 
 resource "aws_db_subnet_group" "aurora" {
   name       = "${var.app_name}-${var.environment}-aurora-db-subnet-group"
-  subnet_ids = aws_subnet.database.*.id
+  subnet_ids = aws_subnet.database[*].id
 
   tags = {
     Name = "${var.app_name}-${var.environment}-aurora-db-subnet-group"

@@ -3,7 +3,7 @@ resource "aws_lb" "main" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id] # El SG que ya creamos
-  subnets            = aws_subnet.public.*.id      # Vive en las subredes PÚBLICAS
+  subnets            = aws_subnet.public[*].id      # Vive en las subredes PÚBLICAS
 
   enable_deletion_protection = true
   drop_invalid_header_fields = true

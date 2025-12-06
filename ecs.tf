@@ -122,7 +122,7 @@ resource "aws_ecs_service" "api" {
   desired_count   = 2
 
   network_configuration {
-    subnets         = aws_subnet.private.*.id
+    subnets         = aws_subnet.private[*].id
     security_groups = [aws_security_group.fargate_api.id]
   }
 
@@ -148,7 +148,7 @@ resource "aws_ecs_service" "worker" {
   desired_count   = 1
 
   network_configuration {
-    subnets         = aws_subnet.private.*.id
+    subnets         = aws_subnet.private[*].id
     security_groups = [aws_security_group.fargate_worker.id]
   }
 
