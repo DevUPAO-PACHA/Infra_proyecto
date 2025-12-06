@@ -6,6 +6,7 @@ resource "aws_security_group" "alb" {
 
   ingress {
     protocol    = "tcp"
+    description = "Ingreso de seguridad alb"
     from_port   = 80
     to_port     = 80
     cidr_blocks = ["0.0.0.0/0"]
@@ -20,6 +21,7 @@ resource "aws_security_group" "alb" {
   # }
 
   egress {
+    description = "Salida de seguridad alb"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -38,12 +40,14 @@ resource "aws_security_group" "fargate_api" {
 
   ingress {
     protocol        = "tcp"
+    description = "Ingreso de seguridad fargate_api"
     from_port       = var.app_port
     to_port         = var.app_port
     security_groups = [aws_security_group.alb.id]
   }
 
   egress {
+    description = "Salida de seguridad fargate_api"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -61,6 +65,7 @@ resource "aws_security_group" "fargate_worker" {
   vpc_id      = aws_vpc.main.id
 
   egress {
+    description = "salida de seguridad fargate_worker"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -78,6 +83,7 @@ resource "aws_security_group" "rds" {
   vpc_id      = aws_vpc.main.id
 
   ingress {
+    description = "Ingreso de seguridad rds"
     protocol        = "tcp"
     from_port       = 3306
     to_port         = 3306
@@ -88,6 +94,7 @@ resource "aws_security_group" "rds" {
   }
 
   egress {
+    description = "Salida de seguridad rds"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
