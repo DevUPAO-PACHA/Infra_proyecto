@@ -22,5 +22,5 @@ api_image_uri    = "111111111111.dkr.ecr.us-east-1.amazonaws.com/mi-api:dev"
 worker_image_uri = "111111111111.dkr.ecr.us-east-1.amazonaws.com/mi-worker:dev"
 
 # Backend
-backend_s3_bucket_name     = "tfstate-dev-695100305629"
+backend_s3_bucket_name     = "tfstate-dev-974646089872"
 backend_dynamo_table_name  = "tf-lock-dev"

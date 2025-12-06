@@ -82,7 +82,7 @@ variable "log_retention_days" {
 }
 
 variable "environment" {
-  description = "Nombre del entorno: dev, qa, prod"
+  description = "Nombre del entorno: dev, stage, prod"
   type        = string
 }
 
