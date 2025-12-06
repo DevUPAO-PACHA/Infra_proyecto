@@ -1,31 +1,30 @@
-
 resource "aws_lb" "main" {
-  name               = "mi-app-alb"
-  internal           = false # Es público
+  name               = "${var.app_name}-${var.environment}-alb"
+  internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id] # El SG que ya creamos
-  subnets            = aws_subnet.public.*.id      # Vive en las subredes PÚBLICAS
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = aws_subnet.public.*.id
 
   tags = {
-    Name = "${var.app_name}-alb"
+    Name = "${var.app_name}-${var.environment}-alb"
   }
 }
 
 resource "aws_lb_target_group" "api" {
-  name        = "${var.app_name}-tg"
+  name        = "${var.app_name}-${var.environment}-tg"
   port        = var.app_port
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
   health_check {
-    enabled = true
-    path    = "/actuator/health"
+    enabled  = true
+    path     = "/actuator/health"
     protocol = "HTTP"
   }
 
   tags = {
-    Name = "api-fargate-tg"
+    Name = "${var.app_name}-${var.environment}-api-tg"
   }
 }
 
@@ -35,7 +34,7 @@ resource "aws_lb_listener" "http" {
   protocol          = "HTTP"
 
   default_action {
-    type = "forward"
-    target_group_arn = aws_lb_target_group.api.arn 
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api.arn
   }
 }

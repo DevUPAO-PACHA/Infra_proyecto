@@ -80,3 +80,9 @@ variable "log_retention_days" {
   type    = number
   default = 30
 }
+
+variable "environment" {
+  description = "Nombre del entorno: dev, qa, prod"
+  type        = string
+}
+

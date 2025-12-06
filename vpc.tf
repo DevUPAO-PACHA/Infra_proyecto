@@ -1,11 +1,10 @@
-
 resource "aws_vpc" "main" {
   cidr_block           = var.vpc_cidr
   enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = {
-    Name = "mi-app-vpc"
+    Name = "${var.app_name}-${var.environment}-vpc"
   }
 }
 
@@ -17,7 +16,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "public-subnet-${count.index + 1}"
+    Name = "${var.app_name}-${var.environment}-public-subnet-${count.index + 1}"
   }
 }
 
@@ -28,7 +27,7 @@ resource "aws_subnet" "private" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "private-subnet-${count.index + 1}"
+    Name = "${var.app_name}-${var.environment}-private-subnet-${count.index + 1}"
   }
 }
 
@@ -39,7 +38,7 @@ resource "aws_subnet" "database" {
   availability_zone = var.availability_zones[count.index]
 
   tags = {
-    Name = "db-subnet-${count.index + 1}"
+    Name = "${var.app_name}-${var.environment}-db-subnet-${count.index + 1}"
   }
 }
 
@@ -47,7 +46,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "main-igw"
+    Name = "${var.app_name}-${var.environment}-igw"
   }
 }
 
@@ -62,7 +61,7 @@ resource "aws_nat_gateway" "main" {
   subnet_id     = aws_subnet.public[count.index].id
 
   tags = {
-    Name = "nat-gateway-${count.index + 1}"
+    Name = "${var.app_name}-${var.environment}-nat-gateway-${count.index + 1}"
   }
 
   depends_on = [aws_internet_gateway.main]
@@ -77,7 +76,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "public-route-table"
+    Name = "${var.app_name}-${var.environment}-public-route-table"
   }
 }
 
@@ -91,7 +90,7 @@ resource "aws_route_table" "private" {
   }
 
   tags = {
-    Name = "private-route-table-${count.index + 1}"
+    Name = "${var.app_name}-${var.environment}-private-route-table-${count.index + 1}"
   }
 }
 
@@ -99,7 +98,7 @@ resource "aws_route_table" "database" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "database-route-table"
+    Name = "${var.app_name}-${var.environment}-database-route-table"
   }
 }
 
@@ -122,10 +121,10 @@ resource "aws_route_table_association" "database" {
 }
 
 resource "aws_db_subnet_group" "aurora" {
-  name       = "aurora-db-subnet-group"
+  name       = "${var.app_name}-${var.environment}-aurora-db-subnet-group"
   subnet_ids = aws_subnet.database.*.id
 
   tags = {
-    Name = "Grupo de subredes para Aurora"
+    Name = "${var.app_name}-${var.environment}-aurora-db-subnet-group"
   }
 }

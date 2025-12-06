@@ -1,4 +1,3 @@
-
 resource "random_password" "db" {
   length           = 16
   special          = true
@@ -6,10 +5,11 @@ resource "random_password" "db" {
 }
 
 resource "aws_secretsmanager_secret" "db" {
-  name = "${var.app_name}/db-password"
+  name = "${var.app_name}-${var.environment}-db-password"
 
   tags = {
-    Name = "Secreto de BD para mi-app"
+    Name        = "${var.app_name}-${var.environment}-db-secret"
+    Environment = var.environment
   }
 }
 
@@ -19,7 +19,7 @@ resource "aws_secretsmanager_secret_version" "db" {
 }
 
 resource "aws_rds_cluster" "aurora" {
-  cluster_identifier = "mi-app-aurora-cluster"
+  cluster_identifier = "${var.app_name}-${var.environment}-aurora-cluster"
   engine             = "aurora-mysql"
 
   availability_zones     = var.availability_zones
@@ -41,14 +41,15 @@ resource "aws_rds_cluster" "aurora" {
   ]
 
   tags = {
-    Name = "mi-app-aurora-cluster"
+    Name        = "${var.app_name}-${var.environment}-aurora-cluster"
+    Environment = var.environment
   }
 }
 
 resource "aws_rds_cluster_instance" "aurora" {
   count              = 2
   cluster_identifier = aws_rds_cluster.aurora.id
-  identifier         = "mi-app-aurora-instance-${count.index}"
+  identifier         = "${var.app_name}-${var.environment}-aurora-instance-${count.index}"
 
   instance_class = "db.serverless"
 
@@ -56,6 +57,7 @@ resource "aws_rds_cluster_instance" "aurora" {
   engine_version = aws_rds_cluster.aurora.engine_version
 
   tags = {
-    Name = "mi-app-aurora-instance-${count.index}"
+    Name        = "${var.app_name}-${var.environment}-aurora-instance-${count.index}"
+    Environment = var.environment
   }
 }

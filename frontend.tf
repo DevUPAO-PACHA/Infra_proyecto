@@ -1,9 +1,9 @@
-
 resource "aws_s3_bucket" "frontend" {
-  bucket = "mi-app-frontend-bucket-${data.aws_caller_identity.current.account_id}" # Nombre de bucket
+  bucket = "${var.app_name}-${var.environment}-frontend-${data.aws_caller_identity.current.account_id}"
 
   tags = {
-    Name = "frontend-bucket"
+    Name        = "${var.app_name}-${var.environment}-frontend-bucket"
+    Environment = var.environment
   }
 }
 
@@ -17,7 +17,7 @@ resource "aws_s3_bucket_public_access_block" "frontend" {
 }
 
 resource "aws_cloudfront_origin_access_identity" "oai" {
-  comment = "OAI para el bucket S3 del frontend"
+  comment = "OAI for ${var.app_name}-${var.environment}-frontend"
 }
 
 resource "aws_s3_bucket_policy" "frontend" {
@@ -46,7 +46,7 @@ resource "aws_cloudfront_distribution" "main" {
 
   origin {
     domain_name = aws_s3_bucket.frontend.bucket_regional_domain_name
-    origin_id   = "S3-Frontend"
+    origin_id   = "${var.app_name}-${var.environment}-frontend-origin"
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.oai.cloudfront_access_identity_path
@@ -55,20 +55,20 @@ resource "aws_cloudfront_distribution" "main" {
 
   origin {
     domain_name = aws_lb.main.dns_name
-    origin_id   = "ALB-API-Backend"
+    origin_id   = "${var.app_name}-${var.environment}-alb-origin"
 
     custom_origin_config {
       http_port              = 80
       https_port             = 443
-      origin_protocol_policy = "http-only" # El ALB escucha en 80
+      origin_protocol_policy = "http-only"
       origin_ssl_protocols   = ["TLSv1.2"]
     }
   }
 
   default_cache_behavior {
-    target_origin_id = "S3-Frontend"
-    allowed_methods  = ["GET", "HEAD", "OPTIONS"]
-    cached_methods   = ["GET", "HEAD"]
+    target_origin_id       = "${var.app_name}-${var.environment}-frontend-origin"
+    allowed_methods        = ["GET", "HEAD", "OPTIONS"]
+    cached_methods         = ["GET", "HEAD"]
     viewer_protocol_policy = "redirect-to-https"
 
     forwarded_values {
@@ -80,11 +80,11 @@ resource "aws_cloudfront_distribution" "main" {
   }
 
   ordered_cache_behavior {
-    path_pattern     = "/api/*"
-    target_origin_id = "ALB-API-Backend" # ...van al ALB.
+    path_pattern           = "/api/*"
+    target_origin_id       = "${var.app_name}-${var.environment}-alb-origin"
 
-    allowed_methods  = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-    cached_methods   = ["GET", "HEAD"]
+    allowed_methods        = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+    cached_methods         = ["GET", "HEAD"]
     viewer_protocol_policy = "redirect-to-https"
 
     forwarded_values {
@@ -118,5 +118,10 @@ resource "aws_cloudfront_distribution" "main" {
     geo_restriction {
       restriction_type = "none"
     }
+  }
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-cdn"
+    Environment = var.environment
   }
 }

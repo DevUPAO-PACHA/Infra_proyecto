@@ -3,16 +3,21 @@
 ###############################################
 
 resource "aws_iam_role" "ecs_execution_role" {
-  name = "${var.app_name}-ecs-execution-role"
+  name = "${var.app_name}-${var.environment}-ecs-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
       Principal = { Service = "ecs-tasks.amazonaws.com" }
     }]
   })
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-ecs-execution-role"
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
@@ -21,16 +26,21 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_policy" {
 }
 
 resource "aws_iam_policy" "execution_secrets_policy" {
-  name = "${var.app_name}-execution-secrets-policy"
+  name = "${var.app_name}-${var.environment}-execution-secrets-policy"
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Effect = "Allow",
-      Action = ["secretsmanager:GetSecretValue"],
+      Effect   = "Allow",
+      Action   = ["secretsmanager:GetSecretValue"],
       Resource = [aws_secretsmanager_secret.db.arn]
     }]
   })
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-execution-secrets-policy"
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "execution_secrets_attach" {
@@ -38,39 +48,53 @@ resource "aws_iam_role_policy_attachment" "execution_secrets_attach" {
   policy_arn = aws_iam_policy.execution_secrets_policy.arn
 }
 
+###############################################
+# 2. API TASK ROLE
+###############################################
+
 resource "aws_iam_role" "api_task_role" {
-  name = "${var.app_name}-api-task-role"
+  name = "${var.app_name}-${var.environment}-api-task-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
       Principal = { Service = "ecs-tasks.amazonaws.com" }
     }]
   })
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-api-task-role"
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_policy" "api_permissions" {
-  name = "${var.app_name}-api-permissions"
+  name = "${var.app_name}-${var.environment}-api-permissions"
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Sid = "ReadSecret"
-        Effect = "Allow"
-        Action = ["secretsmanager:GetSecretValue"]
+        Sid      = "ReadSecret",
+        Effect   = "Allow",
+        Action   = ["secretsmanager:GetSecretValue"],
         Resource = [aws_secretsmanager_secret.db.arn]
       },
       {
-        Sid = "SendSQS"
-        Effect = "Allow"
-        Action = ["sqs:SendMessage"]
+        Sid      = "SendSQS",
+        Effect   = "Allow",
+        Action   = ["sqs:SendMessage"],
         Resource = [aws_sqs_queue.reservas_queue.arn]
       }
     ]
   })
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-api-permissions"
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "api_permissions_attach" {
@@ -78,48 +102,61 @@ resource "aws_iam_role_policy_attachment" "api_permissions_attach" {
   policy_arn = aws_iam_policy.api_permissions.arn
 }
 
+###############################################
+# 3. WORKER TASK ROLE
+###############################################
+
 resource "aws_iam_role" "worker_task_role" {
-  name = "${var.app_name}-worker-task-role"
+  name = "${var.app_name}-${var.environment}-worker-task-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
-      Action = "sts:AssumeRole",
-      Effect = "Allow",
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
       Principal = { Service = "ecs-tasks.amazonaws.com" }
     }]
   })
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-worker-task-role"
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_policy" "worker_permissions" {
-  name = "${var.app_name}-worker-permissions"
+  name = "${var.app_name}-${var.environment}-worker-permissions"
 
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
       {
-        Sid = "ReadSecret"
-        Effect = "Allow"
-        Action = ["secretsmanager:GetSecretValue"]
+        Sid      = "ReadSecret",
+        Effect   = "Allow",
+        Action   = ["secretsmanager:GetSecretValue"],
         Resource = [aws_secretsmanager_secret.db.arn]
       },
       {
-        Sid = "ReceiveDeleteSQS"
-        Effect = "Allow"
+        Sid    = "ReceiveDeleteSQS",
+        Effect = "Allow",
         Action = [
           "sqs:ReceiveMessage",
           "sqs:DeleteMessage",
           "sqs:GetQueueAttributes"
-        ]
+        ],
         Resource = [aws_sqs_queue.reservas_queue.arn]
       },
       {
-        Sid = "SendEmail"
-        Effect = "Allow"
-        Action = ["ses:SendEmail"]
+        Sid    = "SendEmail",
+        Effect = "Allow",
+        Action = ["ses:SendEmail"],
         Resource = "*"
       }
     ]
   })
-}
 
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-worker-permissions"
+    Environment = var.environment
+  }
+}

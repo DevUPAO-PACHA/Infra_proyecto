@@ -1,24 +1,30 @@
 output "rds_cluster_endpoint" {
-  description = "El endpoint de conexión (escritura) del cluster Aurora."
+  description = "Endpoint de escritura del cluster Aurora para el entorno actual."
   value       = aws_rds_cluster.aurora.endpoint
 }
 
 output "rds_cluster_reader_endpoint" {
-  description = "El endpoint de solo lectura del cluster Aurora."
+  description = "Endpoint de solo lectura del cluster Aurora para el entorno actual."
   value       = aws_rds_cluster.aurora.reader_endpoint
 }
 
 output "db_secret_arn" {
-  description = "El ARN del secreto en Secrets Manager."
+  description = "ARN del secreto en Secrets Manager que almacena la contraseña de la base de datos para el entorno actual."
   value       = aws_secretsmanager_secret.db.arn
+  sensitive   = true
 }
 
 output "alb_dns_name" {
-  description = "El DNS público del Application Load Balancer."
+  description = "DNS público del Application Load Balancer del entorno actual."
   value       = aws_lb.main.dns_name
 }
 
 output "frontend_url" {
-  description = "La URL pública (CloudFront) de la aplicación."
+  description = "URL pública (CloudFront) del frontend para el entorno actual."
   value       = "https://${aws_cloudfront_distribution.main.domain_name}"
+}
+
+output "environment" {
+  description = "Entorno actual desplegado."
+  value       = var.environment
 }

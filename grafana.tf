@@ -1,6 +1,5 @@
-
 resource "aws_iam_role" "grafana_role" {
-  name = "${var.app_name}-grafana-role"
+  name = "${var.app_name}-${var.environment}-grafana-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -12,10 +11,15 @@ resource "aws_iam_role" "grafana_role" {
       }
     }]
   })
+
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-grafana-role"
+    Environment = var.environment
+  }
 }
 
 resource "aws_iam_policy" "grafana_cloudwatch_policy" {
-  name = "${var.app_name}-grafana-cloudwatch-policy"
+  name = "${var.app_name}-${var.environment}-grafana-cloudwatch-policy"
 
   policy = jsonencode({
     Version = "2012-10-17",
@@ -35,8 +39,12 @@ resource "aws_iam_policy" "grafana_cloudwatch_policy" {
       }
     ]
   })
-}
 
+  tags = {
+    Name        = "${var.app_name}-${var.environment}-grafana-cloudwatch-policy"
+    Environment = var.environment
+  }
+}
 
 resource "aws_iam_role_policy_attachment" "grafana_attach" {
   role       = aws_iam_role.grafana_role.name
@@ -44,18 +52,19 @@ resource "aws_iam_role_policy_attachment" "grafana_attach" {
 }
 
 resource "aws_grafana_workspace" "this" {
-  name        = "${var.app_name}-grafana"
-  description = "Observability for ${var.app_name}"
+  name        = "${var.app_name}-${var.environment}-grafana"
+  description = "Observability workspace for ${var.app_name} (${var.environment})"
 
   authentication_providers = ["AWS_SSO"]
 
   account_access_type = "CURRENT_ACCOUNT"
-
   permission_type     = "CUSTOMER_MANAGED"
-  role_arn  = aws_iam_role.grafana_role.arn
+
+  role_arn = aws_iam_role.grafana_role.arn
 
   tags = {
-    Service = "${var.app_name}-observability"
+    Service     = "${var.app_name}-${var.environment}-observability"
+    Environment = var.environment
   }
 }
 
@@ -66,4 +75,3 @@ output "grafana_workspace_url" {
 output "grafana_role_arn" {
   value = aws_iam_role.grafana_role.arn
 }
-
