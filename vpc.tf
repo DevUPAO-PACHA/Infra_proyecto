@@ -128,3 +128,29 @@ resource "aws_db_subnet_group" "aurora" {
     Name = "${var.app_name}-${var.environment}-aurora-db-subnet-group"
   }
 }
+
+resource "aws_flow_log" "main" {
+  iam_role_arn    = aws_iam_role.vpc_flow_log_role.arn
+  log_destination = aws_cloudwatch_log_group.flow_log.arn
+  traffic_type    = "ALL"
+  vpc_id          = aws_vpc.main.id
+}
+
+resource "aws_cloudwatch_log_group" "flow_log" {
+  name = "/aws/vpc-flow-log/${var.app_name}"
+}
+
+resource "aws_iam_role" "vpc_flow_log_role" {
+  name = "${var.app_name}-vpc-flow-log-role"
+  assume_role_policy = data.aws_iam_policy_document.flow_log_assume_role.json
+}
+
+data "aws_iam_policy_document" "flow_log_assume_role" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["vpc-flow-logs.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}

@@ -30,7 +30,7 @@ resource "aws_rds_cluster" "aurora" {
   vpc_security_group_ids = [aws_security_group.rds.id]
   skip_final_snapshot    = true
   storage_encrypted      = true
-
+  deletion_protection = true
   serverlessv2_scaling_configuration {
     min_capacity = 0.5
     max_capacity = 4
