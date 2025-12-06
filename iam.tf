@@ -160,3 +160,50 @@ resource "aws_iam_policy" "worker_permissions" {
     Environment = var.environment
   }
 }
+
+resource "aws_iam_role" "backup_role" {
+  name = "${var.app_name}-${var.environment}-backup-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Principal = {
+          Service = "backup.amazonaws.com"
+        }
+        Effect = "Allow"
+        Sid    = ""
+      },
+    ]
+  })
+}
+
+resource "aws_iam_role_policy" "backup_role_policy" {
+  name   = "${var.app_name}-${var.environment}-backup-policy"
+  role   = aws_iam_role.backup_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = [
+          "rds:DescribeDBClusters",
+          "rds:DescribeDBInstances",
+          "rds:CreateDBClusterSnapshot",
+          "rds:CreateDBSnapshot",
+          "rds:CopyDBSnapshot",
+          "rds:DeleteDBClusterSnapshot",
+          "rds:DeleteDBSnapshot",
+          "rds:DescribeDBClusterSnapshots"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+      {
+        Action   = "backup:StartBackupJob"
+        Effect   = "Allow"
+        Resource = "*"
+      }
+    ]
+  })
+}

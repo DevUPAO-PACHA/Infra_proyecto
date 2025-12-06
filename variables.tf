@@ -78,7 +78,7 @@ variable "app_name" {
 variable "log_retention_days" {
   description = "Número de días que los logs serán retenidos en la infraestructura"
   type    = number
-  default = 30
+  default = 365
 }
 
 variable "environment" {

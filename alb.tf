@@ -8,6 +8,12 @@ resource "aws_lb" "main" {
   enable_deletion_protection = true
   drop_invalid_header_fields = true
 
+  access_logs {
+    bucket  = aws_s3_bucket.lb_logs.bucket
+    enabled = true
+    prefix  = "load-balancer-logs"
+  }
+
   tags = {
     Name = "${var.app_name}-${var.environment}-alb"
   }
@@ -35,7 +41,7 @@ resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = 80
   protocol          = "HTTPS"
-
+  ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api.arn
