@@ -18,4 +18,5 @@ resource "aws_sqs_queue" "reservas_queue" {
   tags = {
     Name = "reservas-queue"
   }
+  sqs_managed_sse_enabled = true
 }

@@ -5,11 +5,15 @@ resource "aws_lb" "main" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id] # El SG que ya creamos
   subnets            = aws_subnet.public.*.id      # Vive en las subredes PÚBLICAS
+  
+  enable_deletion_protection = true
+  drop_invalid_header_fields = true
 
   tags = {
     Name = "${var.app_name}-alb"
   }
 }
+
 
 resource "aws_lb_target_group" "api" {
   name        = "${var.app_name}-tg"
