@@ -23,7 +23,7 @@ jobs:
       - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_PLAN_DEV }}
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ROLE_PLAN_DEV }}
           aws-region: us-east-1
 
       - name: Setup Terraform
@@ -34,34 +34,37 @@ jobs:
       - name: Terraform Init (dev)
         run: terraform init -backend-config="envs/dev/backend.hcl"
 
-      # Paso 1: Linting (formato)
       - name: Terraform Format Check
         run: terraform fmt -check -recursive
 
-      # Paso 1: Validación
       - name: Terraform Validate
         run: terraform validate -no-color
 
       - name: Terraform Plan (dev)
         id: plan
-        run: terraform plan -no-color -var-file="envs/dev/terraform.tfvars"
+        run: |
+          terraform plan -no-color -var-file="envs/dev/terraform.tfvars" -out=tfplan.out
+          terraform show -no-color tfplan.out > tfplan.txt
         continue-on-error: true
 
       - name: Publicar el Plan en el PR
         uses: actions/github-script@v7
         if: github.event.pull_request.head.repo.full_name == github.repository
-        env:
-          PLAN_OUTPUT: |
-            #### Terraform Plan (dev)
-            ```terraform
-            ${{ steps.plan.outputs.stdout }}
-            ```
         with:
           script: |
-            const output = process.env.PLAN_OUTPUT;
+            const fs = require('fs');
+            let planOutput = '';
+            
+            try {
+              // ← CORREGIDO: ahora lee tfplan.txt
+              planOutput = fs.readFileSync('tfplan.txt', 'utf8');
+            } catch (err) {
+              planOutput = 'Error: No se pudo leer el archivo del plan.';
+            }
+            
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: output
+              body: `#### Terraform Plan (Dev)\n\n\`\`\`terraform\n${planOutput}\n\`\`\``
             });
