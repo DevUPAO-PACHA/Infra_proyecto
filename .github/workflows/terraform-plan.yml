@@ -1,5 +1,4 @@
-
-name: 'Terraform Plan (Pull Request)'
+name: 'Terraform Plan (Pull Request - Dev)'
 
 on:
   pull_request:
@@ -9,7 +8,7 @@ on:
 
 jobs:
   terraform-plan:
-    name: 'Terraform Plan'
+    name: 'Terraform Plan Dev'
     runs-on: ubuntu-latest
 
     permissions:
@@ -21,10 +20,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::695100305629:role/github-actions-plan-role
+          role-to-assume: ${{ secrets.AWS_ROLE_PLAN_DEV }}
           aws-region: us-east-1
 
       - name: Setup Terraform
@@ -32,13 +31,20 @@ jobs:
         with:
           terraform_version: 1.5.0
 
-      - name: Terraform Init
-        id: init
-        run: terraform init
+      - name: Terraform Init (dev)
+        run: terraform init -backend-config="envs/dev/backend.hcl"
 
-      - name: Terraform Plan
+      # Paso 1: Linting (formato)
+      - name: Terraform Format Check
+        run: terraform fmt -check -recursive
+
+      # Paso 1: Validación
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan (dev)
         id: plan
-        run: terraform plan -no-color
+        run: terraform plan -no-color -var-file="envs/dev/terraform.tfvars"
         continue-on-error: true
 
       - name: Publicar el Plan en el PR
@@ -46,7 +52,7 @@ jobs:
         if: github.event.pull_request.head.repo.full_name == github.repository
         env:
           PLAN_OUTPUT: |
-            #### 🤖 Terraform Plan 📖
+            #### Terraform Plan (dev)
             ```terraform
             ${{ steps.plan.outputs.stdout }}
             ```
