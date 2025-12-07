@@ -64,7 +64,10 @@ resource "aws_nat_gateway" "main" {
     Name = "${var.app_name}-${var.environment}-nat-gateway-${count.index + 1}"
   }
 
-  depends_on = [aws_internet_gateway.main]
+  depends_on = [
+    aws_eip.nat,
+    aws_internet_gateway.main
+  ]
 }
 
 resource "aws_route_table" "public" {
