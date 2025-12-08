@@ -22,14 +22,14 @@ resource "aws_lb" "main" {
 resource "aws_lb_target_group" "api" {
   name        = "${var.app_name}-${var.environment}-tg"
   port        = var.app_port
-  protocol    = "HTTPS"
+  protocol    = "HTTP"  # Cambié a HTTP si no vas a usar HTTPS
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
   health_check {
     enabled  = true
     path     = "/actuator/health"
-    protocol = "HTTPS"
+    protocol = "HTTP"  # Cambié a HTTP para que coincida con el protocolo del listener
   }
 
   tags = {
@@ -37,11 +37,12 @@ resource "aws_lb_target_group" "api" {
   }
 }
 
+# Configuración del Listener (HTTP, si no usas HTTPS)
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
-  port              = 80
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  port              = 80  # Puerto 80 para HTTP
+  protocol          = "HTTP"  # Usamos HTTP si no estás utilizando certificado SSL
+
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.api.arn
@@ -49,7 +50,9 @@ resource "aws_lb_listener" "http" {
 }
 
 resource "aws_s3_bucket" "lb_logs" {
-  bucket = "${var.app_name}-${var.environment}-alb-logs" # Nombre del bucket
+  bucket = "${var.app_name}-${var.environment}-alb-logs"
+
+  force_destroy = true
 
   tags = {
     Name = "${var.app_name}-${var.environment}-alb-logs"

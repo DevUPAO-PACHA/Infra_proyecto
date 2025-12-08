@@ -5,7 +5,9 @@ resource "random_password" "db" {
 }
 
 resource "aws_secretsmanager_secret" "db" {
-  name       = "${var.app_name}-${var.environment}-db-password"
+  name       = "${var.app_name}-${var.environment}-new-db-password"
+  # Si te genera error Secrets Manager que esta programado para eliminarse realizar este comando en el terminal:
+  # aws secretsmanager delete-secret --secret-id ares-iac-dev-dev-new-db-password --force-delete-without-recovery
   kms_key_id = aws_kms_key.secrets_key.arn
 
   tags = {
@@ -70,12 +72,17 @@ resource "aws_rds_cluster_instance" "aurora" {
   }
 }
 
+resource "aws_backup_vault" "main" {
+  name = "${var.app_name}-${var.environment}-backup-vault"
+}
+
+
 resource "aws_backup_plan" "aws_backup_db" {
   name = "${var.app_name}-${var.environment}-aurora-backup-plan"
 
   rule {
     rule_name         = "DailyBackups"
-    target_vault_name = "Default"
+    target_vault_name = aws_backup_vault.main.name
     schedule          = "cron(0 12 * * ? *)"
   }
 }

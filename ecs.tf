@@ -124,10 +124,11 @@ resource "aws_ecs_service" "api" {
   network_configuration {
     subnets         = aws_subnet.private[*].id
     security_groups = [aws_security_group.fargate_api.id]
+    assign_public_ip = false  # Asegúrate de que no tenga IP pública si no es necesario
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.api.arn
+    target_group_arn = aws_lb_target_group.api.arn  # Asociación correcta con el target group
     container_name   = "${var.app_name}-${var.environment}-api-container"
     container_port   = var.app_port
   }
@@ -150,6 +151,7 @@ resource "aws_ecs_service" "worker" {
   network_configuration {
     subnets         = aws_subnet.private[*].id
     security_groups = [aws_security_group.fargate_worker.id]
+    assign_public_ip = false
   }
 
   tags = {
