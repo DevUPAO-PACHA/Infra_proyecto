@@ -5,7 +5,7 @@ resource "random_password" "db" {
 }
 
 resource "aws_secretsmanager_secret" "db" {
-  name       = "${var.app_name}-${var.environment}-new-db-password"
+  name = "${var.app_name}-${var.environment}-new-db-password"
   # Si te genera error Secrets Manager que esta programado para eliminarse realizar este comando en el terminal:
   # aws secretsmanager delete-secret --secret-id ares-iac-dev-dev-new-db-password --force-delete-without-recovery
   kms_key_id = aws_kms_key.secrets_key.arn

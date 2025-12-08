@@ -74,12 +74,3 @@ variable "environment" {
   type        = string
 }
 
-variable "backend_s3_bucket_name" {
-  description = "Nombre del bucket de S3 para el backend"
-  type        = string
-}
-
-variable "backend_dynamo_table_name" {
-  description = "Nombre de la tabla DynamoDB para el backend"
-  type        = string
-}

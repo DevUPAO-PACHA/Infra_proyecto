@@ -22,14 +22,14 @@ resource "aws_lb" "main" {
 resource "aws_lb_target_group" "api" {
   name        = "${var.app_name}-${var.environment}-tg"
   port        = var.app_port
-  protocol    = "HTTP"  # Cambié a HTTP si no vas a usar HTTPS
+  protocol    = "HTTP" # Cambié a HTTP si no vas a usar HTTPS
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
 
   health_check {
     enabled  = true
     path     = "/actuator/health"
-    protocol = "HTTP"  # Cambié a HTTP para que coincida con el protocolo del listener
+    protocol = "HTTP" # Cambié a HTTP para que coincida con el protocolo del listener
   }
 
   tags = {
@@ -40,8 +40,8 @@ resource "aws_lb_target_group" "api" {
 # Configuración del Listener (HTTP, si no usas HTTPS)
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
-  port              = 80  # Puerto 80 para HTTP
-  protocol          = "HTTP"  # Usamos HTTP si no estás utilizando certificado SSL
+  port              = 80     # Puerto 80 para HTTP
+  protocol          = "HTTP" # Usamos HTTP si no estás utilizando certificado SSL
 
   default_action {
     type             = "forward"
